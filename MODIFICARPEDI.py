@@ -12,7 +12,7 @@ import pyperclip
 from openpyxl import load_workbook
 
 #MAIN FILE
-file = (r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\Modificador de Pedidos 23.xlsx")
+file = (r"xxxx")
 #PASSWORD
 df = pd.read_excel(file, sheet_name="Contraseñas")
 user1 = df.iat[0,1]
@@ -25,7 +25,7 @@ client= int(pedidos.iat[0,1])
 df3= pd.read_excel(file, sheet_name="Modificacion")
 
 #EXCEL FILE OPENPYXL
-wb = load_workbook(r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\Modificador de Pedidos 23.xlsx")
+wb = load_workbook(r"xxxxx")
 sheet = wb["Pedido"]
 
 
