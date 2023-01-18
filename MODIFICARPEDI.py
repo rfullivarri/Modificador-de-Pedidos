@@ -11,8 +11,12 @@ import pyautogui as pa
 import pyperclip
 from openpyxl import load_workbook
 
+"""
+Para reconocimiento de imagenes tenes OPENCV-PYTHON MATPLOTLIB Y NUMPY  
+"""
+
 #MAIN FILE
-file = (r"xxxx")
+file = (r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\Modificador de Pedidos 23.xlsx")
 #PASSWORD
 df = pd.read_excel(file, sheet_name="Contraseñas")
 user1 = df.iat[0,1]
@@ -20,12 +24,18 @@ password1 = df.iat[0,2]
 #PEDIDOS SHEET
 df2= pd.read_excel(file, sheet_name="Pedido")
 pedidos = df2[df2["Estado"]=="Pendiente"]
-client= int(pedidos.iat[0,1])
+
+try:
+    client= int(pedidos.iat[0,1])
+except IndexError:
+    print("No hay Pedidos Pendientes de modificacion")
+    sys.exit()
+
 #MODIFICATION SHEET
-df3= pd.read_excel(file, sheet_name="Modificacion")
+df3= pd.read_excel(file, sheet_name="Modificacion") #, index="Cliente")
 
 #EXCEL FILE OPENPYXL
-wb = load_workbook(r"xxxxx")
+wb = load_workbook(r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\Modificador de Pedidos 23.xlsx")
 sheet = wb["Pedido"]
 
 
@@ -38,17 +48,20 @@ dayback = dayback.strftime('%d-%m-%y')
 
 
 df3 = df3[df3["Estado"]=="Pendiente"]
-df3Deleted= df3[df3["Tipo"].isin(["Eliminar"])]
-df3Modify= df3[df3["Tipo"].isin(["Modificacion"])]
-df3Add= df3[df3["Tipo"].isin(["Agregar"])]
 
-lendf3Deleted= len(df3Deleted["Tipo"])
-lendf3Modify= len(df3Modify["Tipo"])
-lendf3Add= len(df3Add["Tipo"])
+df3Deleted = df3[df3["Tipo"].isin(["Eliminar"])]##
+df3Deleted1 = df3Deleted[df3Deleted["Cliente"].isin([client])]##
 
+df3Modify = df3[df3["Tipo"].isin(["Modificacion"])]##
+df3Modify1 = df3Modify[df3Modify["Cliente"].isin([client])]##
 
 
+df3Add = df3[df3["Tipo"].isin(["Agregar"])]##
+df3Add1 = df3Add[df3Add["Cliente"].isin([client])]##
 
+lendf3Deleted= len(df3Deleted1)
+lendf3Modify= len(df3Modify1)
+lendf3Add= len(df3Add1)
 
 
 #INICIATE
@@ -62,7 +75,7 @@ if is_open_truck == False:
     keyboard.press("TAB")
     pa.typewrite("AS400",0.2)
     keyboard.press("ENTER")
-    time.sleep(10)
+    time.sleep(12)
 
     #LOGIN
     pa.typewrite(user1, 0.2)
@@ -71,7 +84,7 @@ if is_open_truck == False:
     keyboard.press("ENTER")
     time.sleep(3)
     pa.hotkey("win","up")
-    for i in range(0,5):
+    for i in range(0,3):
         pa.typewrite("\n")
         time.sleep(2)
 else:
@@ -88,12 +101,15 @@ while len(pedidos) > 0:
     FINDPED= [3,6,1]
     for i in FINDPED:
         pa.typewrite(f"{str(i)}\n")
-        time.sleep(2)
+        time.sleep(1.5)
 
 
     #CLIENT FILTER PENDING MODIFICATION
-    pa.typewrite(str(client),0.2)
-    pa.typewrite(str(client),0.2)
+    for c in range(0,2):
+        for i in range(0,(6-len(str(client)))):
+            pa.typewrite("0")
+        pa.typewrite(str(client),0.2)
+    #pa.typewrite(str(client),0.2)
     pa.typewrite(dayback)
     pa.typewrite(now)
     for i in range(0,9):
@@ -107,7 +123,7 @@ while len(pedidos) > 0:
             time.sleep(0.15) 
 
     #CASH SALE FILTER
-    time.sleep(2) 
+    time.sleep(1.5) 
     pa.press("f9")
     pa.typewrite("001\n", 0.2)
     pa.press("ENTER")
@@ -179,7 +195,7 @@ while len(pedidos) > 0:
     pa.click(x=xtruck361,y=(ytruck361+(22*(len(dfpedd)-1))))
     pa.typewrite("13", 0.2)
     pa.press("ENTER")
-    time.sleep(3)
+    time.sleep(2)
 
 
 
@@ -196,13 +212,14 @@ while len(pedidos) > 0:
     MODPED= [3,1,1]
     for i in MODPED:
         pa.typewrite(f"{str(i)}\n")
-        time.sleep(2)
+        time.sleep(1.5)
 
 
     #FILTER IN TRANSFER ORDER PLACE (3 1 1) 
     tped311= int(dftped.loc[dftped.index[-1]])
     pedd311= int(dfpedd.loc[dfpedd.index[-1]])
 
+    time.sleep(1)
     pa.click(x=685, y=612)
     pa.write(str(client), 0.2)
     pa.click(x=290, y=300)
@@ -210,17 +227,19 @@ while len(pedidos) > 0:
     pa.click(x=532, y=300)
     pa.write(f"0{str(pedd311)}", 0.2)
     pa.press("ENTER")
-    time.sleep(2)
+    time.sleep(1.5)
     pa.click(x=228, y=324)
+    time.sleep(0.5)
     pa.write("2")
     pa.press("ENTER")
 
-    time.sleep(2)
+    time.sleep(1.5)
     pa.click(x=953, y=394)
-    time.sleep(1)
+    time.sleep(1.5)
     for i in range(0,11):
             keyboard.press("SUPR")
-            time.sleep(0.2)
+            time.sleep(0.1)
+    time.sleep(0.5)
     pa.click(x=436, y=420)
     pa.write("804")
     time.sleep(1)            
@@ -234,35 +253,49 @@ while len(pedidos) > 0:
 
 
  #--------------------------------------------------SCRAPPING ORDER DATA----------------------------------------------------------------------
-
-    #TRUCK ORDER CODE
-    pa.moveTo(x=242, y=304)
-    pa.dragTo(311, 615,0.5, button= 'left')
-    pa.hotkey('ctrl','c')
-    CODTruck= (pyperclip.paste().replace('\n',',').replace(' ','').replace('\r','')).split(sep=",")
-    time.sleep(1)
     CODTruck1 =[]
-    for COD in CODTruck:
-        if COD != "":
-            CODTruck1.append(COD)
-        else:
-            pass
-    CODTruck1 = np.array(CODTruck1)
-
-    #SKU QUANTITIES IN THE ORDER  
-    pa.moveTo(x=500, y=310)
-    pa.dragTo(613, 615,0.5, button= 'left')
-    pa.hotkey('ctrl','c')
-    CANTTruck= (pyperclip.paste().replace('\n',',').replace(' ','').replace('\r','')).split(sep=",")
-    time.sleep(1)
     CANTTruck1 =[]
-    for CANT in CANTTruck:
-        if CANT != "":
-            CANTTruck1.append(CANT)
-        else:
-            pass
-    CANTTruck1 = np.array(CANTTruck1)
+    plus=0
 
+    while plus ==0:
+        plus += 1
+        #TRUCK ORDER CODE
+        pa.moveTo(x=242, y=304)
+        pa.dragTo(311, 615,0.5, button= 'left')
+        pa.hotkey('ctrl','c')
+        CODTruck= (pyperclip.paste().replace('\n',',').replace(' ','').replace('\r','')).split(sep=",")
+        time.sleep(1)
+        for COD in CODTruck:
+            if COD != "":
+                CODTruck1.append(COD)
+            else:
+                pass
+
+        if len(CODTruck1) == 12:
+            plus -= 1
+            pass
+        elif len(CODTruck1) == 24:
+            plus -= 1
+            pass
+        else:
+            pass    
+        
+        #SKU QUANTITIES IN THE ORDER  
+        pa.moveTo(x=500, y=310)
+        pa.dragTo(613, 615,0.5, button= 'left')
+        pa.hotkey('ctrl','c')
+        CANTTruck= (pyperclip.paste().replace('\n',',').replace(' ','').replace('\r','')).split(sep=",")
+        time.sleep(1)
+        for CANT in CANTTruck:
+            if CANT != "":
+                CANTTruck1.append(CANT)
+            else:
+                pass
+        pa.press("pagedown")
+        
+    pa.press("pageup")    
+    CANTTruck1 = np.array(CANTTruck1)
+    CODTruck1 = np.array(CODTruck1)
     CODCANT= {CODTruck1[i]: CANTTruck1[i] for i in range(len(CODTruck1))}
 
  #------------------------------------------------------------------------------------------------------------------------------------------------
@@ -276,34 +309,59 @@ while len(pedidos) > 0:
         positionCX= 504
         positionCY= 324
         for skm in df3Modify["SKU"]: 
+            pa.press("f11")
+            time.sleep(1)
             dfsku = df3Modify[df3Modify["SKU"].isin([skm])]
             df3Cant = (dfsku["Cantidad"].astype("Int64")).to_string(index=False)
             for k , skt in enumerate(CODTruck1):
+                pa.press("f11")
                 if str(skt) == str(skm):
-                    pa.press("f11")       
-                    pa.moveTo(x=positionCX, y=(positionCY+(22*(k))))
-                    time.sleep(1)
-                    if int(df3Cant) < 0:
-                        newcant=(int(CODCANT.get(str(skm)))+ int(df3Cant))
+                    #SKU POSITIONS
+                    if k >= 12: #NEXT PAGE
+                        pa.press("pagedown")
+                        if k-12 == 0:       
+                            pa.moveTo(x=positionCX, y=(positionCY))
+                            time.sleep(0.5)
+                        else :
+                            pa.moveTo(x=positionCX, y=(positionCY+(22*(k-12))))
+                            time.sleep(0.5)   
+                    elif k == 0: #FIRST POSITION
+                        pa.press("f11")       
+                        pa.moveTo(x=positionCX, y=(positionCY))
+                        time.sleep(0.5) 
+                    else: #EVERYONE ELSE
+                        pa.press("f11")       
+                        pa.moveTo(x=positionCX, y=(positionCY+(22*(k))))
+                        time.sleep(1)
+
+                    #WRITTING QUANTITIE    
+                    if int(df3Cant) < 0: #NEGATIVES
+                        newcant=(int(CODCANT.get(str(skm)))+ int(df3Cant))  #estilo de filtro 
                         pa.click()
+                        time.sleep(1)
                         for i in range(0,(9-len(str(newcant)))):
                             pa.typewrite("0") 
                         pa.typewrite(str(newcant),0.1)
                         pa.press("ENTER")
                         pa.press("ENTER")
-                    elif len(df3Cant) < 8:
+                        time.sleep(1)
+                        pa.press("pageup")   
+                    elif len(df3Cant) < 8: #POSITIVES
                         pa.click()
+                        time.sleep(1)
                         for i in range(0,(9-len(df3Cant))):
                             pa.typewrite("0")
                         pa.typewrite(str(df3Cant),0.1)
                         pa.press("ENTER")
                         pa.press("ENTER")
+                        time.sleep(1)
+                        pa.press("pageup")
                     else:
                          pass   
-
+                         
     #AGREGAR
     def ADD():    
-        for ska in df3Add["SKU"]: 
+        for ska in df3Add1: 
             pa.press("f6")
             dfsku = df3Add[df3Add["SKU"].isin([ska])]
             df3Cant = (dfsku["Cantidad"].astype("Int64")).to_string(index=False)
@@ -331,22 +389,32 @@ while len(pedidos) > 0:
 
     #DELETED
     def DELETED():
-        positionCX= 219
-        positionCY= 324
+        positionDX= 219
+        positionDY= 324
 
-        for skd in df3Deleted["SKU"]: 
+        for skd in df3Deleted1: 
             pa.hotkey("shift","f1")
             time.sleep(1)
-            pa.moveTo(x=positionCX, y=positionCY)
+            pa.moveTo(x=positionDX, y=positionDY)
             for k , skt in enumerate(CODTruck1):
-                if str(skt) == str(skd):        
-                    pa.moveTo(x=positionCX, y=(positionCY+(22*(k))))
-                    time.sleep(1)
-                    pa.click()
-                    pa.typewrite("4")
-                    pa.press("ENTER")
-                    pa.press("ENTER")
-                    pa.press("ENTER")
+                if str(skt) == str(skd):
+                    if k == 0:
+                        #pa.moveTo(x=positionDX, y=positionDY)
+                        #
+                        # time.sleep(1)
+                        pa.click()
+                        time.sleep(0.3)
+                        pa.press("4")
+                        time.sleep(0.5)
+                        pa.press("ENTER")
+                        pa.press("ENTER") 
+                    else:           
+                        pa.moveTo(x=positionDX, y=(positionDY+(22*(k))))
+                        time.sleep(1)
+                        pa.click()
+                        pa.press("4")
+                        pa.press("ENTER")
+                        pa.press("ENTER")
                 else:
                     pass    
 
@@ -356,16 +424,17 @@ while len(pedidos) > 0:
 
 
  #---------------------------------------------------MODIFICATION FLOW---------------------------------------------------------------------------
+    if lendf3Modify > 0:
+        print(MODIFICATE())
+    else:
+        pass
+
 
     if lendf3Deleted > 0:
         print(DELETED())
     else:
         pass
 
-    if lendf3Modify > 0:
-        print(MODIFICATE())
-    else:
-        pass
 
     if lendf3Add > 0:
         print(ADD())
@@ -399,11 +468,16 @@ while len(pedidos) > 0:
         if k[0].value == client:
             v[0].value = "OK"
     wb.save(r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\Modificador de Pedidos 23.xlsx")
-    time.sleep(1)  
+    time.sleep(2)  
     df2= pd.read_excel(file, sheet_name="Pedido")
     pedidos = df2[df2["Estado"]=="Pendiente"]
+    try:
+        client= int(pedidos.iat[0,1])
+    except  IndexError:
+        client= 0 
+        print("No hay mas pedidos por modificar")  
     time.sleep(3)
-   
+
         
     
 
