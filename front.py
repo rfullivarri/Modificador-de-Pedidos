@@ -111,9 +111,14 @@ app.layout = html.Div(children=[
     Output("quantity-input", "value"),
     [Input("slider-quantity", "value")],
 )
-def update_quantity_input(quantity):
+
+def update_quantity(quantity):
     return quantity
 
+def update_quantity_input(value):
+    global cantidad
+    cantidad = value
+    return value
 
 
 @app.callback(
@@ -125,28 +130,34 @@ def reset_n_clicks(n_clicks):
         return 0
     return n_clicks
 
+
 # Asignamos las funciones a los elementos de salida del callback
 @app.callback(
     [Output('output-clientes', 'children'),
      Output('output-productos', 'children'),
-     Output('output-quantity', 'children')],
+    #  Output('dropdown-clientes','options'),
+    #   Output('dropdown-productos','options')
+        ],
 
     [Input('dropdown-clientes', 'value'),
      Input('dropdown-productos', 'value'),
-     Input('slider-quantity', 'value'),
+     Input('slider-quantity', 'value'), 
      Input('enviar-button', 'n_clicks')
      ])
 
+# def reset_values(n_clicks, client_options, product_options):
+#     if n_clicks:
+#         # Resetea los valores de los desplegables y el slider
+#         return client_options, None, product_options, None, 1
 
 
-def update_outputs(client_value, product_value, quantity_value, n_clicks):
+def update_outputs(client_value, product_value, quantity, n_clicks):
 
     if client_value and product_value and n_clicks > 0:
         mopi["C"+str(len_product+1)].value= product_value
         mopi["A"+str(len_client+1)].value= client_value
-        mopi["D"+str(len_client+1)].value= quantity_value
+        mopi["D"+str(len_client+1)].value= quantity
         wb.save(r"C:\Users\ramferna\OneDrive - Anheuser-Busch InBev\MOPI232.xlsx")
-
 
 
 
